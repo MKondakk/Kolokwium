@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  app:
+    build: ./app
+    container_name: app-container
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/kolokwium01
+    healthcheck:
+      test: curl -fs http://localhost:3000/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - mongo
+    volumes:
+      - app_data:/app/data
+    secrets:
+      - mongo_name_database
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo-container
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+networks:
+  kolokwium01_network:
+
+secrets:
+  mongo_name_database:
+    file: ./mongo_name_database.txt
+
+volumes:
+  app_data:
+  mongo_data:
